@@ -5,8 +5,7 @@ import java.net.InetSocketAddress;
 /**
  * assemble socket server address and port
  *
- * @Author : TaoLing
- * @Date : create at 2021/4/30 11:18
+ * @Date : create at 2021/4/30 11:18 by TaoLing
  */
 public class SocketAddress extends InetSocketAddress {
 

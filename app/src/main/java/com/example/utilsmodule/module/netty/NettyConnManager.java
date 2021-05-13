@@ -1,23 +1,22 @@
 package com.example.utilsmodule.module.netty;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.text.TextUtils;
 import android.util.Log;
-
-import com.example.nettydemo.common.JMUtils;
-
 import io.netty.channel.ChannelFutureListener;
 
 /**
- * @Author : TaoLing
- * @Date : create at 2021/4/30 14:57
+ * netty connect manager
+ *
+ * @Date : create at 2021/5/12 18:41 by TaoLing
  */
-public class NettyConnManager implements INettyConnectListener{
-
+public class NettyConnManager implements INettyConnectListener {
     private static final String TAG = "NettyConnManager";
     private Context mContext;
     private static NettyConnManager mInstance;
-    private NettyController mController;
+    private NettyConnector mNettyConnector;
 
     /**
      * connect lock
@@ -54,23 +53,34 @@ public class NettyConnManager implements INettyConnectListener{
         return mInstance;
     }
 
-    public void tryConnection(){
+    /**
+     * init NettyConnector
+     */
+    private void initNettyConnector(){
+        SocketAddress address = new SocketAddress("172.26.135.111", 12345);
+        mNettyConnector = new NettyConnector(mContext, address);
+        mNettyConnector.setINettyConnectListener(this);
+    }
 
-        synchronized (CONNECT_LOCK){
-            if (!JMUtils.isNetWorkConnected(mContext)){
-                Log.e(TAG,"network is disconnect, return.");
+    /**
+     * try connection
+     */
+    public void tryConnection(){
+        synchronized (CONNECT_LOCK) {
+            if (!isNetWorkConnected(mContext)) {
+                Log.d(TAG, "Network is no connected , so return.");
                 return;
             }
 
-            if (mController == null){
-                initNettyController();
+            if (mNettyConnector == null) {
+                initNettyConnector();
             }
 
-            if (mController != null){
-                if (!mController.isConnecting() && !mController.isConnected()){
-                    mController.connect();
+            if (mNettyConnector != null) {
+                if (!mNettyConnector.isConnected() && !mNettyConnector.isConnecting()){
+                    mNettyConnector.connect();
                 } else {
-                    Log.e(TAG,"Socket is connecting or connected. do nothing.");
+                    Log.d(TAG,"Socket isConnected or isConnecting , do nothing.");
                 }
             }
         }
@@ -84,55 +94,59 @@ public class NettyConnManager implements INettyConnectListener{
      */
     public void send(String data,ChannelFutureListener listener){
         if (!TextUtils.isEmpty(data)){
-            if (mController != null){
-                mController.send(data,listener);
+            if (mNettyConnector != null){
+                mNettyConnector.send(data,listener);
             }
-        }
-    }
-
-    /**
-     * initialization NettyController
-     */
-    private void initNettyController(){
-        SocketAddress address = new SocketAddress("172.26.135.111", 12345);
-        mController = new NettyController(mContext, address);
-        mController.setINettyConnectListener(this);
-    }
-
-    @Override
-    public void connectOk() {
-        Log.e(TAG,"connect success.");
-    }
-
-    @Override
-    public void connectFail() {
-        Log.e(TAG,"connect fail.");
-
-        if (mController != null){
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            mController.startReconnect();
-        }
-    }
-
-    @Override
-    public void connectError(SocketAddress address, Exception e) {
-        Log.e(TAG,"connect " + address.toString() + " Exception : " + e.getMessage());
-    }
-
-    @Override
-    public void exceptionCaught(Throwable cause) {
-        if (cause != null) {
-            Log.e(TAG, "cause : " + (cause != null ? cause.toString() : "null"));
         }
     }
 
     @Override
     public void receiveData(String data) {
-        Log.e(TAG,"receiveData : " + data);
+        Log.d(TAG,"receiver data : " + data);
+    }
+
+    @Override
+    public void connectOk() {
+        Log.d(TAG,"connect success.");
+    }
+
+    @Override
+    public void connectError(SocketAddress address, Exception e) {
+        Log.d(TAG, (e != null ? "connect error : " + e.toString() : "Exception is null."));
+    }
+
+    @Override
+    public void connectEnd() {
+        Log.d(TAG, "connect end , start reconnect.");
+        tryConnection();
+    }
+
+    @Override
+    public void disConnect() {
+        Log.d(TAG, "dis connect , start reconnect main server.");
+        tryConnection();
+    }
+
+    @Override
+    public void exceptionCaught(Throwable cause) {
+        if (cause != null) {
+            Log.d(TAG, "cause : " + (cause != null ? cause.toString() : "null"));
+        }
+    }
+
+    /**
+     * get network connected state
+     *
+     * @param context
+     * @return
+     */
+    private boolean isNetWorkConnected(Context context) {
+        if (context == null) {
+            return false;
+        }
+        ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo info = manager.getActiveNetworkInfo();
+        return (info == null ? false : info.isConnected());
     }
 
     /**
@@ -143,8 +157,8 @@ public class NettyConnManager implements INettyConnectListener{
             mContext = null;
         }
 
-        if (mController != null){
-            mController = null;
+        if (mNettyConnector != null){
+            mNettyConnector = null;
         }
 
         if (mInstance != null){

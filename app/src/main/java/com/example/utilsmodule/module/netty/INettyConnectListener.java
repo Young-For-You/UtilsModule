@@ -1,13 +1,46 @@
 package com.example.utilsmodule.module.netty;
 
 /**
- * @Author : TaoLing
- * @Date : create at 2021/4/30 10:55
+ * netty state listener
+ *
+ * @Date : create at 2021/5/12 17:44 by TaoLing
  */
-interface INettyConnectListener {
-    void connectOk();
-    void connectFail();
-    void connectError(SocketAddress address, Exception e);
-    void exceptionCaught(Throwable cause);
+public interface INettyConnectListener {
+
+    /**
+     * received platform data
+     *
+     * @param data
+     */
     void receiveData(String data);
+
+    /**
+     * connect success
+     */
+    void connectOk();
+
+    /**
+     * connect error
+     *
+     * @param address {@link SocketAddress}
+     * @param e {@link Exception}
+     */
+    void connectError(SocketAddress address, Exception e);
+
+    /**
+     * reached the try connection number of times
+     */
+    void connectEnd();
+
+    /**
+     * dis connect
+     */
+    void disConnect();
+
+    /**
+     * other connect error
+     *
+     * @param cause {@link Throwable}
+     */
+    void exceptionCaught(Throwable cause);
 }
