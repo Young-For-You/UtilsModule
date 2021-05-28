@@ -107,6 +107,7 @@ public class BleConnectorManager {
     BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
         @Override
         public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+            // TODO: 2021/5/28 根据自己想要连接的设备名自行判断，此处为连接设备名为"O2"开头并且格式为"O2 XXXX"
             if (device.getName() != null){
                 if (BtUtils.isO2Device(device.getName())){
                     Log.e(TAG, "onLeScan : " + device.getName() + ", mac : " + device.getAddress());
@@ -152,17 +153,20 @@ public class BleConnectorManager {
                 Log.e(TAG,"onServicesDiscovered : success.");
 
                 for (BluetoothGattService service : gatt.getServices()){
+                    // TODO: 2021/5/28 此处Checkme02.DEFAULT_SERVICE_UUID替换为连接设备所提供的service uuid
                     if (service.getUuid().toString().equalsIgnoreCase(Checkme02.DEFAULT_SERVICE_UUID)){
                         Log.e(TAG,"onServicesDiscovered : find O2 ble service : " + service.getUuid().toString());
 
                         for (BluetoothGattCharacteristic bluetoothGattCharacteristic : service.getCharacteristics()){
                             String strUUID = bluetoothGattCharacteristic.getUuid().toString();
+                            // TODO: 2021/5/28 此处Checkme02.WRITE_CHAR_UUID 替换为连接设备所提供的用来写入消息的 uuid
                             if (strUUID.equalsIgnoreCase(Checkme02.WRITE_CHAR_UUID)){
                                 Log.e(TAG,"onServicesDiscovered : find O2 Write Characteristic : " + bluetoothGattCharacteristic.getUuid().toString());
                                 mWriteGattCharacteristic = bluetoothGattCharacteristic;
                                 setCharacteristicNotification(mWriteGattCharacteristic,true);
                             }
 
+                            // TODO: 2021/5/28 此处Checkme02.READ_CHAR_UUID 替换为连接设备所提供的用来读取notify消息的uuid
                             if (strUUID.equalsIgnoreCase(Checkme02.READ_CHAR_UUID)){
                                 Log.e(TAG,"onServicesDiscovered : find O2 Notify Characteristic : " + bluetoothGattCharacteristic.getUuid().toString());
                                 mNotifyGattCharacteristic = bluetoothGattCharacteristic;
