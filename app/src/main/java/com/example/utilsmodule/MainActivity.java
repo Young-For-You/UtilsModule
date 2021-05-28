@@ -7,11 +7,16 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.example.utilsmodule.module.file.FileUtils;
 import com.example.utilsmodule.module.netty.NettyConnManager;
+
+import java.io.File;
+import java.util.ArrayList;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -21,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Button mBtConnect;
     private Button mBtSend;
+    private Button mBtCopyFile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +56,22 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         });
+
+        mBtCopyFile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        String oldPath = "/storage/sdcard/se_log";
+                        String newPath = "/storage/sdcard/se_log/Temp";
+                        ArrayList<String> strings = new ArrayList<>();
+                        strings.add("Temp");
+                        FileUtils.copyFileToNewPath(oldPath,newPath,strings);
+                    }
+                }).start();
+            }
+        });
     }
 
     private void init(){
@@ -61,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
     private void initView(){
         mBtConnect = (Button) findViewById(R.id.bt_connect);
         mBtSend = (Button) findViewById(R.id.bt_send);
+        mBtCopyFile = (Button) findViewById(R.id.bt_copy_file);
 
     }
 
@@ -68,9 +91,9 @@ public class MainActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_WIFI_STATE) != PackageManager.PERMISSION_GRANTED
-//                || ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED
-//                || ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-//                || ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
 //                || ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
 //                || ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED
 //                || ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED
@@ -83,10 +106,10 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{
                     Manifest.permission.INTERNET,
                     Manifest.permission.ACCESS_NETWORK_STATE,
-                    Manifest.permission.ACCESS_WIFI_STATE
-//                    Manifest.permission.READ_PHONE_STATE,
-//                    Manifest.permission.READ_EXTERNAL_STORAGE,
-//                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.ACCESS_WIFI_STATE,
+                    Manifest.permission.READ_PHONE_STATE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
 //                    Manifest.permission.ACCESS_COARSE_LOCATION,
 //                    Manifest.permission.BLUETOOTH_ADMIN,
 //                    Manifest.permission.BLUETOOTH,
