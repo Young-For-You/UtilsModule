@@ -202,6 +202,13 @@ public class BleConnectorManager {
 
     };
 
+    /**
+     * !!! Attention !!!
+     * You must first set the characteristic descriptor value to receive messages from ble devices
+     *
+     * @param characteristic {@link BluetoothGattCharacteristic}
+     * @param enable if you want to catch characteristic change, you should set it to true
+     */
     private void setCharacteristicNotification(BluetoothGattCharacteristic characteristic, boolean enable){
         boolean b = mBluetoothGatt.setCharacteristicNotification(characteristic, enable);
         if (b){
